@@ -13,10 +13,15 @@ Next, the letter will go through the rotors. Enigma has 5 rotors, but only 3 can
 ROTOR DETAILS
 
 INPUT:        A B C D E F G H I J K L M N O P Q R S T U V W X Y Z 
+
 ROTOR ONE:    E K M F L G D Q V Z N T O W Y H X U S P A I B R C J
+
 ROTOR TWO:    A J D K S I R U X B L H W T M C Q G Z N P Y F V O E
+
 ROTOR THREE:  B D F H J L C P R T X V Z N Y E I W G A K M U S Q O
+
 ROTOR FOUR:   E S O V P Z J A Y Q U I R H X L N F T G K D C M W B
+
 ROTOR FIVE:   V Z B R G I T Y U P S D N H L X A W M J Q O F E C K
 
 What this means is, if a "Z" were to enter rotor One, it would become a J, while a "Z" going through rotor Three would become an "O".
