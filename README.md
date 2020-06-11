@@ -48,6 +48,7 @@ An important thing to note is that before the Engima encrypts a letter, it shift
 After going through the rotor section, we hit the reflector. The reflector works very much like the plugboard, except each letter is paired with another, and the pairings are preset. Specificially, the pairings are:
 
 INPUT:  A B C D E F G H I J K L M N O P Q R S T U V W X Y Z 
+
 OUTPUT: Y R U H Q S L D P X N G O K M I E B F Z C W V J A T
 
 Here, our "T" would become A "Z".
