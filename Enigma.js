@@ -2,6 +2,9 @@ function Enigma(plugboardSettings, rotorOrder, rotorSettings){
   this.numRotors = 3;
   this.pb = new Plugboard(plugboardSettings);   //creates the Plugboard with the given settings.
   this.rotorSet = getRotors(rotorOrder,rotorSettings);
+  console.log(this.rotorSet[1].turnKey);
+  this.shiftFirst = this.rotorSet[1].orientation == (this.rotorSet[1].turnKey-2);       //determines wheteher to shift the first rotor during the first shift
+
   function getRotors(rO,rS){//rotorOrder, rotorSettings
     let rotors = [];  //set of all rotors
     let setting = 0;  //setting of rotor to be added
@@ -29,7 +32,80 @@ function Enigma(plugboardSettings, rotorOrder, rotorSettings){
       rotors.push(rotor);
     }
 
-    console.log(rotors);
+    
+
+    return rotors;
+  }
+
+  //End of Constructor Methods
+  this.showRotors = function(){
+    for(i = 0; i < this.numRotors; i++){
+      console.log(this.rotorSet[i].type + " @ (" + intToChar(this.rotorSet[i].orientation+1) + ")");
+    }
+  }
+
+
+  this.clean = function(originalMessage){
+    originalMessage = originalMessage.toUpperCase();
+    var cleanedString = ""; //string after cleaning
+    let c;    //character being tested
+    for(i = 0; i< originalMessage.length; i++){
+      let c = originalMessage.charAt(i);
+
+      if(charToInt(c) > 0 && charToInt(c) <= 26){
+        cleanedString += c;
+        
+      }
+      
+    }
+
+    console.log(cleanedString);
+    return cleanedString;
+  }
+
+
+  /*
+  The first thing to know is that Enigma rusn from the third rotor to the second to the first.
+
+  The third rotor gets shifted no matter what.
+
+  the second rotor gets shifted if the third rotor makes it's turnkey shift. Every rotor has one. For example, if RotorOne is in the third spot,
+  and it goes from Q to R, then the second rotor will also shift.
+
+  The second rotor will also shift if the previous shift put it at the beggining of the turnkey. For example, if rotorFour is the second rotor,
+  and get shifted onto J, then the next turn the second rotor is guraenteed to shift the next run, and is also guarenteed to shif the first rotor as well.
+  */
+  
+
+  this.shiftRotors = function(){
+    if(this.shiftFirst){
+      this.rotorSet[1].shift();
+      this.rotorSet[0].shift();
+      this.shiftFirst = false;
+    }
+
+    if(this.rotorSet[this.numRotors-1].shift() && !this.shiftFirst){ //prevent from shifting twice if both 3 and 2 are at their critical points.
+      this.rotorSet[1].shift();
+      if(this.rotorSet[1].orientation == this.rotorSet[1].turnKey-2){
+        this.shiftFirst = true;
+      }
+    }
+  }
+
+  this.scrambleChar = function(char){
+    this.shiftRotors();
+  }
+
+  this.scramble = function(message){
+    console.log(this.shiftFirst);
+    let cleaned = this.clean(message);        //Enigma doesn't have spaces or special Characters. As such, those characters must be removed.
+    let scrambled = "";
+    for(i = 0; i<cleaned.length; i++){
+      let c = this.scrambleChar(cleaned.charAt(i));
+      scrambled += c;
+    }
+
+    return scrambled;
   }
 
   
@@ -43,29 +119,31 @@ function Enigma(plugboardSettings, rotorOrder, rotorSettings){
 }
 
 function Plugboard(settings){
-let output = ["error"];
-let length = settings.length;
+    let output = ["error"];
+    let length = settings.length;
 
-for(i = 1; i<=26; i++){//Map 1 to A, 2 to B, and so on.
-  output[i] = intToChar(i);
+    for(i = 1; i<=26; i++){//Map 1 to A, 2 to B, and so on.
+      output[i] = intToChar(i);
+    }
+
+    for(i = 0; i< 20; i+=2){//switches characters such that if a and b are connected, a will output B and b will output A
+      let indexOne = charToInt((settings.charAt(i)));
+      let indexTwo = charToInt((settings.charAt(i+1)));
+      swap(indexOne,indexTwo);
+    }
+
+    this.runPlugboard = function(c){//will return letter as it runs through the plugboard.
+      return output[charToInt(c)];
+    }
+
+    function swap(indexOne, indexTwo){
+      let temp = output[indexOne];
+      output[indexOne] = output[indexTwo];
+      output[indexTwo] = temp;
+    }
 }
 
-for(i = 0; i< 20; i+=2){//switches characters such that if a and b are connected, a will output B and b will output A
-  let indexOne = charToInt((settings.charAt(i)));
-  let indexTwo = charToInt((settings.charAt(i+1)));
-  swap(indexOne,indexTwo);
-}
 
-this.runPlugboard = function(c){//will return letter as it runs through the plugboard.
-  return output[charToInt(c)];
-}
-
-function swap(indexOne, indexTwo){
-  let temp = output[indexOne];
-  output[indexOne] = output[indexTwo];
-  output[indexTwo] = temp;
-}
-}
 
 class Rotor{
   constructor(type, orientation){
@@ -97,8 +175,7 @@ class Rotor{
       this.orientation++;
     }
 
-
-    if(this.orientation == (this.turnKey -1 )){//returns wether it is at the critical point yet (-1 because orientation is one before the letter index)
+    if(this.orientation+1 == (this.turnKey)){//returns wether it is at the critical point yet (+1 because orientation is one before the letter index)
       return true;
     }else{
       return false;
@@ -106,7 +183,7 @@ class Rotor{
   }
 
   output(){
-    return "Rotor " + this.type + " @ " + this.orientation;
+    return "Rotor " + this.type + " @ " + this.orientation+1 + " (" + intToChar(this.orientation+1) + ")";
   }
 }
 
@@ -173,15 +250,30 @@ function intToChar(int){//turns 1 to A, B to 2, and so on
 
 
 //main
-var settingsForRotors = [10,11,12];
+var settingsForRotors = [10,4,22];
 var e = new Enigma("abcdefghijklmnopqrst", "123", settingsForRotors);
+e.showRotors();
+console.log("");
 
+e.shiftRotors();
+e.showRotors();
+console.log("");
+
+e.shiftRotors();
+e.showRotors();
+console.log("");
+
+e.shiftRotors();
+e.showRotors();
+console.log("");
+
+e.shiftRotors();
+e.showRotors();
 
 
 
 
 /*
-
 Q -> R
 E -> F
 V -> W
