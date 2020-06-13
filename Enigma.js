@@ -66,8 +66,14 @@ runBackwards(c){
 }
 
 shift(){
-  this.orientation++;
-  if(this.orientation == this.turnKey){
+  if(this.orientation == 25){// If at the end, set back to start
+    this.orientation = 0;
+  }else{
+    this.orientation++;
+  }
+
+
+  if(this.orientation == (this.turnKey -1 )){//returns wether it is at the critical point yet (-1 because orientation is one before the letter index)
     return true;
   }else{
     return false;
@@ -81,6 +87,42 @@ class RotorOne extends Rotor{
     this.turnKey = 18; //turns after going from Q to R
     this.forwardOutput = "EKMFLGDQVZNTOWYHXUSPAIBRCJ";    //tells how the wiring runs going forwards
     this.backwardsOutput = "UWYGADFPVZBECKMTHXSLRINQOJ";  //tells how the wiring runs going backwards
+  }
+}
+
+class RotorTwo extends Rotor{
+  constructor(orientation){
+    super(orientation);
+    this.turnKey = 6; //turns after going from E to F
+    this.forwardOutput = "AJDKSIRUXBLHWTMCQGZNPYFVOE";    //tells how the wiring runs going forwards
+    this.backwardsOutput = "AJPCZWRLFBDKOTYUQGENHXMIVS";  //tells how the wiring runs going backwards
+  }
+}
+
+class RotorThree extends Rotor{
+  constructor(orientation){
+    super(orientation);
+    this.turnKey = 23; //turns after going from V to W
+    this.forwardOutput = "BDFHJLCPRTXVZNYEIWGAKMUSQO";    //tells how the wiring runs going forwards
+    this.backwardsOutput = "TAGBPCSDQEUFVNZHYIXJWLRKOM";  //tells how the wiring runs going backwards
+  }
+}
+
+class RotorFour extends Rotor{
+  constructor(orientation){
+    super(orientation);
+    this.turnKey = 11; //turns after going from J to K
+    this.forwardOutput = "ESOVPZJAYQUIRHXLNFTGKDCMWB";    //tells how the wiring runs going forwards
+    this.backwardsOutput = "HZWVARTNLGUPXQCEJMBSKDYOIF";  //tells how the wiring runs going backwards
+  }
+}
+
+class RotorFive extends Rotor{
+  constructor(orientation){
+    super(orientation);
+    this.turnKey = 1; //turns after going from Z to A
+    this.forwardOutput = "VZBRGITYUPSDNHLXAWMJQOFECK";    //tells how the wiring runs going forwards
+    this.backwardsOutput = "QCYLXWENFTZOSMVJUDKGIARPHB";  //tells how the wiring runs going backwards
   }
 }
 
