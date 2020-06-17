@@ -1,4 +1,23 @@
 function Enigma(plugboardSettings, rotorOrder, rotorSettings){
+  //error checking starts
+  if(plugboardSettings.length != 20){   //checks if plugboardsettings are the right length
+    throw "There must be 10 paired letters for the plugboard";
+  }
+
+  if(rotorOrder.length != 3){
+    throw "Please select 3 rotors";
+  }
+
+  if(!Array.isArray(rotorSettings)){
+    throw "rotorSettings must be an Array";
+  }
+
+  if(rotorSettings.length != 3){
+    throw "Please enter 3 rotor settings";
+  }
+  //error checking ends
+
+  //constructor begins
   this.numRotors = 3;
   this.pb = new Plugboard(plugboardSettings);   //creates the Plugboard with the given settings.
   this.rotorSet = getRotors(rotorOrder,rotorSettings);
@@ -10,6 +29,14 @@ function Enigma(plugboardSettings, rotorOrder, rotorSettings){
     let rotor;
     for(i = 0; i<3; i++){
       setting = rS[i];
+      
+      if(!Number.isInteger(setting)){
+        throw "Rotor settings must be numbers";
+      }
+
+      if(setting > 26 || setting < 1){
+        throw "Rotor Settings must be between 1 and 26 inclusive"
+      }
 
       switch(rO.charAt(i)){
         case "1":
@@ -27,6 +54,8 @@ function Enigma(plugboardSettings, rotorOrder, rotorSettings){
         case "5":
           rotor = new RotorFive(setting);
           break;
+        default:
+          throw "A rotor selector must be a number between 1 and 5 inclusive";
       }
       rotors.push(rotor);
     }
@@ -35,14 +64,22 @@ function Enigma(plugboardSettings, rotorOrder, rotorSettings){
 
     return rotors;
   }
+  //constructor ends
 
-  //End of Constructor Methods
-  this.showRotors = function(){
-    for(i = 0; i < this.numRotors; i++){
-      console.log(this.rotorSet[i].type + " @ (" + intToChar(this.rotorSet[i].orientation+1) + ")");
+  this.scramble = function(message){
+    if(message === null || message === undefined){
+      throw "message cannot be " + message;
     }
-  }
 
+    let cleaned = this.clean(message);        //Enigma doesn't have spaces or special Characters. As such, those characters must be removed.
+    let scrambled = "";
+    for(i = 0; i<cleaned.length; i++){
+      let c = this.scrambleChar(cleaned.charAt(i));
+      scrambled += c;
+    }
+
+    return scrambled;
+  }
 
   this.clean = function(originalMessage){   //removes spaces and other non-alpha characters
     originalMessage = originalMessage.toUpperCase();
@@ -51,7 +88,7 @@ function Enigma(plugboardSettings, rotorOrder, rotorSettings){
     for(i = 0; i< originalMessage.length; i++){
       let c = originalMessage.charAt(i);
 
-      if(charToInt(c) > 0 && charToInt(c) <= 26){
+      if(charToInt(c) > 0 && charToInt(c) <= 26){   //is a letter
         cleanedString += c;
         
       }
@@ -61,6 +98,15 @@ function Enigma(plugboardSettings, rotorOrder, rotorSettings){
     return cleanedString;
   }
 
+  this.scrambleChar = function(char){//scrambles each character one by one
+    this.shiftRotors();
+    var scrambled = this.pb.runPlugboard(char);
+    scrambled = this.runRotorsF(scrambled);      //runing rotors forwards
+    scrambled = this.reflector(scrambled);
+    scrambled = this.runRotorsB(scrambled);      //running rotors backwards
+    scrmabled = this.pb.runPlugboard(scrambled);   
+    return scrambled;
+  }
 
   /*
   The first thing to know is that Enigma rusn from the third rotor to the second to the first.
@@ -73,8 +119,6 @@ function Enigma(plugboardSettings, rotorOrder, rotorSettings){
   The second rotor will also shift if the previous shift put it at the beggining of the turnkey. For example, if rotorFour is the second rotor,
   and get shifted onto J, then the next turn the second rotor is guraenteed to shift the next run, and is also guarenteed to shif the first rotor as well.
   */
-  
-
   this.shiftRotors = function(){
     if(this.shiftFirst){
       this.rotorSet[1].shift();
@@ -90,35 +134,17 @@ function Enigma(plugboardSettings, rotorOrder, rotorSettings){
     }
   }
 
-  
-
-  this.scramble = function(message){
-    let cleaned = this.clean(message);        //Enigma doesn't have spaces or special Characters. As such, those characters must be removed.
-    let scrambled = "";
-    for(i = 0; i<cleaned.length; i++){
-      let c = this.scrambleChar(cleaned.charAt(i));
-      scrambled += c;
-    }
-
-    return scrambled;
-  }
-
-  this.scrambleChar = function(char){//scrambles each character one by one
-    this.shiftRotors();
-    var scrambled = this.pb.runPlugboard(char);
-    scrambled = this.runRotorsF(scrambled);      //runing rotors forwards
-    scrambled = this.reflector(scrambled);
-    scrambled = this.runRotorsB(scrambled);      //running rotors backwards
-    scrmabled = this.pb.runPlugboard(scrambled);   
-    return scrambled;
-  }
-
   this.runRotorsF = function(char){ //running each rotor forward
     var rotored = this.rotorSet[2].run(char, "F");
     rotored = this.rotorSet[1].run(rotored, "F");
     rotored = this.rotorSet[0].run(rotored, "F");
 
     return rotored;
+  }
+
+  this.reflector = function(c){
+    let reflection = "YRUHQSLDPXNGOKMIEBFZCWVJAT"; //this shows where the reflection will give, where the first letter is "A", the second letter is "B", and so on.
+    return reflection.charAt(charToInt(c)-1);
   }
 
   this.runRotorsB = function(char){ //running each rotor forward
@@ -129,32 +155,41 @@ function Enigma(plugboardSettings, rotorOrder, rotorSettings){
     return rotored;
   }
 
-  
-
-  this.reflector = function(c){
-    let reflection = "YRUHQSLDPXNGOKMIEBFZCWVJAT"; //this shows where the reflection will give, where the first letter is "A", the second letter is "B", and so on.
-    return reflection.charAt(charToInt(c)-1);
+  this.showRotors = function(){
+    for(i = 0; i < this.numRotors; i++){
+      console.log(this.rotorSet[i].type + " @ (" + intToChar(this.rotorSet[i].orientation+1) + ")");
+    }
   }
-
-  
 }
 
-function Plugboard(settings){
+function Plugboard(input){
     let output = ["error"];
+    let settings = input.toUpperCase();
     let length = settings.length;
 
-    for(i = 1; i<=26; i++){//Map 1 to A, 2 to B, and so on.
-      output[i] = intToChar(i);
+    for(i = 0; i< 26; i++){//Map 1 to A, 2 to B, and so on.
+      output[i] = intToChar(i+1);
     }
 
     for(i = 0; i< 20; i+=2){//switches characters such that if a and b are connected, a will output B and b will output A
-      let indexOne = charToInt((settings.charAt(i)));
-      let indexTwo = charToInt((settings.charAt(i+1)));
+      let charOne = settings.charAt(i);
+      let charTwo = settings.charAt(i+1);
+      let indexOne = charToInt(charOne) - 1;
+      let indexTwo = charToInt(charTwo) - 1;
+
+      if((indexOne > 26 || indexOne < 0) || ((indexOne > 26 || indexOne < 0) )){    //checks for invalid entries
+        throw "Only have letters are valid in Plugboard Settings";
+      }
+
+      if(output[indexOne] != charOne || output[indexTwo] != charTwo){
+        throw "no duplicates are allowed in the PlugboardSettings";
+      }
+
       swap(indexOne,indexTwo);
     }
 
     this.runPlugboard = function(c){//will return letter as it runs through the plugboard.
-      return output[charToInt(c)];
+      return output[charToInt(c)-1];
     }
 
     function swap(indexOne, indexTwo){
@@ -163,8 +198,6 @@ function Plugboard(settings){
       output[indexTwo] = temp;
     }
 }
-
-
 
 class Rotor{
   constructor(type, orientation){
@@ -183,11 +216,9 @@ class Rotor{
       num = charToInt(this.backwardsOutput.charAt(num)); //runs backwards through the wire as a char, then converts the new char back to a number
     }
 
-
     num = (num - this.orientation +26)%26; //shifts backwards by the orientation amount, and the +26 catches any negative numbers.
     return intToChar(num);
   }
-
 
   shift(){
     if(this.orientation == 25){// If at the end, set back to start
@@ -214,9 +245,7 @@ class RotorOne extends Rotor{
     this.turnKey = 18; //turns after going from Q to R
     this.forwardOutput = "EKMFLGDQVZNTOWYHXUSPAIBRCJ";    //tells how the wiring runs going forwards
     this.backwardsOutput = "UWYGADFPVZBECKMTHXSLRINQOJ";  //tells how the wiring runs going backwards
-  }
-
-  
+  }  
 }
 
 class RotorTwo extends Rotor{
@@ -255,6 +284,8 @@ class RotorFive extends Rotor{
   }
 }
 
+
+//helper methods
 function charToInt(char){//turns A to 1, B to 2, and so on
   var upper = char.toUpperCase();
 
@@ -275,9 +306,6 @@ var settingsForRotors = [10,4,22];
 var message = "Hello There";
 var e = new Enigma("abcdefghijklmnopqrst", "123", settingsForRotors);
 console.log("\"" + message + "\"" + " scrambled is \"" + e.scramble(message) + "\".");
-
-
-
 
 /*
 Q -> R
