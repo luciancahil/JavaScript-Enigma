@@ -2,7 +2,6 @@ function Enigma(plugboardSettings, rotorOrder, rotorSettings){
   this.numRotors = 3;
   this.pb = new Plugboard(plugboardSettings);   //creates the Plugboard with the given settings.
   this.rotorSet = getRotors(rotorOrder,rotorSettings);
-  console.log(this.rotorSet[1].turnKey);
   this.shiftFirst = this.rotorSet[1].orientation == (this.rotorSet[1].turnKey-2);       //determines wheteher to shift the first rotor during the first shift
 
   function getRotors(rO,rS){//rotorOrder, rotorSettings
@@ -45,7 +44,7 @@ function Enigma(plugboardSettings, rotorOrder, rotorSettings){
   }
 
 
-  this.clean = function(originalMessage){
+  this.clean = function(originalMessage){   //removes spaces and other non-alpha characters
     originalMessage = originalMessage.toUpperCase();
     var cleanedString = ""; //string after cleaning
     let c;    //character being tested
@@ -59,7 +58,6 @@ function Enigma(plugboardSettings, rotorOrder, rotorSettings){
       
     }
 
-    console.log(cleanedString);
     return cleanedString;
   }
 
@@ -69,7 +67,7 @@ function Enigma(plugboardSettings, rotorOrder, rotorSettings){
 
   The third rotor gets shifted no matter what.
 
-  the second rotor gets shifted if the third rotor makes it's turnkey shift. Every rotor has one. For example, if RotorOne is in the third spot,
+  the second rotor gets shifted if the third rotor makes its turnkey shift. Every rotor has one. For example, if RotorOne is in the third spot,
   and it goes from Q to R, then the second rotor will also shift.
 
   The second rotor will also shift if the previous shift put it at the beggining of the turnkey. For example, if rotorFour is the second rotor,
@@ -92,12 +90,9 @@ function Enigma(plugboardSettings, rotorOrder, rotorSettings){
     }
   }
 
-  this.scrambleChar = function(char){
-    this.shiftRotors();
-  }
+  
 
   this.scramble = function(message){
-    console.log(this.shiftFirst);
     let cleaned = this.clean(message);        //Enigma doesn't have spaces or special Characters. As such, those characters must be removed.
     let scrambled = "";
     for(i = 0; i<cleaned.length; i++){
@@ -106,6 +101,32 @@ function Enigma(plugboardSettings, rotorOrder, rotorSettings){
     }
 
     return scrambled;
+  }
+
+  this.scrambleChar = function(char){//scrambles each character one by one
+    this.shiftRotors();
+    var scrambled = this.pb.runPlugboard(char);
+    scrambled = this.runRotorsF(scrambled);      //runing rotors forwards
+    scrambled = this.reflector(scrambled);
+    scrambled = this.runRotorsB(scrambled);      //running rotors backwards
+    scrmabled = this.pb.runPlugboard(scrambled);   
+    return scrambled;
+  }
+
+  this.runRotorsF = function(char){ //running each rotor forward
+    var rotored = this.rotorSet[2].run(char, "F");
+    rotored = this.rotorSet[1].run(rotored, "F");
+    rotored = this.rotorSet[0].run(rotored, "F");
+
+    return rotored;
+  }
+
+  this.runRotorsB = function(char){ //running each rotor forward
+    var rotored = this.rotorSet[0].run(char, "B");
+    rotored = this.rotorSet[1].run(rotored, "B");
+    rotored = this.rotorSet[2].run(rotored, "B");
+
+    return rotored;
   }
 
   
@@ -153,7 +174,7 @@ class Rotor{
 
   run(c, direction){//c is the character to be scrambled, direction dictates if it's forwards or backwards
     let num = charToInt(c); //turns the character into a number
-    num--; // A will need to go through charAt(0), so we must subtract by one
+    num--; // "A" will need to go through charAt(0), "B" will go through charAT(1), and so on,  so we must subtract by one
     num = (num + this.orientation) % 26;//shifts by the orientation, then rounds back down
     
     if(direction === "F"){ // run forwards
@@ -251,24 +272,9 @@ function intToChar(int){//turns 1 to A, B to 2, and so on
 
 //main
 var settingsForRotors = [10,4,22];
+var message = "Hello There";
 var e = new Enigma("abcdefghijklmnopqrst", "123", settingsForRotors);
-e.showRotors();
-console.log("");
-
-e.shiftRotors();
-e.showRotors();
-console.log("");
-
-e.shiftRotors();
-e.showRotors();
-console.log("");
-
-e.shiftRotors();
-e.showRotors();
-console.log("");
-
-e.shiftRotors();
-e.showRotors();
+console.log("\"" + message + "\"" + " scrambled is \"" + e.scramble(message) + "\".");
 
 
 
