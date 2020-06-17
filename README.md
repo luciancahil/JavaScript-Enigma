@@ -12,17 +12,17 @@ Next, the letter will go through the rotors. Enigma has 5 rotors, but only 3 can
 
 ROTOR DETAILS
 
-INPUT:        A B C D E F G H I J K L M N O P Q R S T U V W X Y Z 
+IN:        A B C D E F G H I J K L M N O P Q R S T U V W X Y Z 
 
-ROTOR ONE:    E K M F L G D Q V Z N T O W Y H X U S P A I B R C J
+R1:    E K M F L G D Q V Z N T O W Y H X U S P A I B R C J
 
-ROTOR TWO:    A J D K S I R U X B L H W T M C Q G Z N P Y F V O E
+R2:    A J D K S I R U X B L H W T M C Q G Z N P Y F V O E
 
-ROTOR THREE:  B D F H J L C P R T X V Z N Y E I W G A K M U S Q O
+R3:  B D F H J L C P R T X V Z N Y E I W G A K M U S Q O
 
-ROTOR FOUR:   E S O V P Z J A Y Q U I R H X L N F T G K D C M W B
+R4:   E S O V P Z J A Y Q U I R H X L N F T G K D C M W B
 
-ROTOR FIVE:   V Z B R G I T Y U P S D N H L X A W M J Q O F E C K
+R5:   V Z B R G I T Y U P S D N H L X A W M J Q O F E C K
 
 What this means is, if a "Z" were to enter rotor One, it would become a J, while a "Z" going through rotor Three would become an "O".
 
@@ -47,18 +47,12 @@ An important thing to note is that before the Engima encrypts a letter, it shift
 
 After going through the rotor section, we hit the reflector. The reflector works very much like the plugboard, except each letter is paired with another, and the pairings are preset. Specificially, the pairings are:
 
-INPUT:  A B C D E F G H I J K L M N O P Q R S T U V W X Y Z 
+I:  A B C D E F G H I J K L M N O P Q R S T U V W X Y Z 
 
-OUTPUT: Y R U H Q S L D P X N G O K M I E B F Z C W V J A T
+O: Y R U H Q S L D P X N G O K M I E B F Z C W V J A T
 
 Here, our "T" would become A "Z".
 
 After this is done, we must run through the rotors again, except this time backwards. That is, we must find out where our letter after the reflector is in the output of the third rotor, then give the input as the output. For example, the reflector gave us "Z". Rotor 3 would normally output Z when given the input "M". That means, when running backwards, "Z" would become an "M". (We have ignored the shifts for simplicities sake, but remmember that they also apply here in the same way).
 
 After that, we run through the plugboard one last time if needed, then give the resulf of the plugboard as the final encrypted letter.
-
-For refrence:
-
-1   2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26
-
-A   B   C   D   E   F   G   H   I   J   K   L   M   N   O   P   Q   R   S   T   U   V   W   X   Y   Z 
